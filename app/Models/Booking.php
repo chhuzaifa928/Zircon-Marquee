@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Services\NumberSequenceService;
+use App\Models\Setting;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -56,6 +58,34 @@ class Booking extends Model implements Auditable
 
     /** Statuses that hold a hall+date+slot against new bookings. */
     public const CONFIRMED_STATUSES = ['booked', 'paid'];
+
+    protected static function booted(): void
+    {
+        static::creating(function (Booking $booking) {
+            // Gapless booking number (BKG-0001).
+            if (blank($booking->booking_no)) {
+                $booking->booking_no = app(NumberSequenceService::class)->next('booking_no', 'BKG-');
+            }
+
+            // Snapshot the current GST rate so later rate changes never alter
+            // this booking (SRS §7.4).
+            if (blank($booking->gst_rate)) {
+                $booking->gst_rate = Setting::current()->gst_rate;
+            }
+        });
+    }
+
+    /** Whether the booking is locked against further edits (fully paid). */
+    public function isLocked(): bool
+    {
+        return $this->is_locked || $this->status === 'paid';
+    }
+
+    /** Whether the booking is still awaiting confirmation. */
+    public function isTentative(): bool
+    {
+        return $this->status === 'tentative';
+    }
 
     protected function casts(): array
     {
