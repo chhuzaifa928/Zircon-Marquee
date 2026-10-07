@@ -34,6 +34,8 @@ use OwenIt\Auditing\Contracts\Auditable;
     'advance_total',
     'due',
     'remarks',
+    'arrangements',
+    'bulletin_board',
     'created_by',
     'confirmed_by',
     'confirmed_at',
@@ -48,6 +50,9 @@ class Booking extends Model implements Auditable
 
     /** Available slots. */
     public const SLOTS = ['lunch', 'dinner'];
+
+    /** Common event types (free-text allowed; these back the picker). */
+    public const EVENT_TYPES = ['Baraat', 'Walima', 'Mehndi', 'Nikah', 'Other'];
 
     /** Statuses that hold a hall+date+slot against new bookings. */
     public const CONFIRMED_STATUSES = ['booked', 'paid'];
@@ -88,6 +93,11 @@ class Booking extends Model implements Auditable
     public function charges(): HasMany
     {
         return $this->hasMany(BookingCharge::class);
+    }
+
+    public function foods(): HasMany
+    {
+        return $this->hasMany(BookingFood::class)->orderBy('sort');
     }
 
     public function paymentSlips(): HasMany
