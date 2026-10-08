@@ -94,6 +94,18 @@ class Booking extends Model implements Auditable
         return $this->event_closed_at !== null;
     }
 
+    /** Total recorded event costs (SRS §10). */
+    public function costsTotal(): float
+    {
+        return (float) $this->eventCosts()->sum('amount');
+    }
+
+    /** Net profit = grand total − recorded costs (SRS §10.4). */
+    public function netProfit(): float
+    {
+        return round((float) $this->grand_total - $this->costsTotal(), 2);
+    }
+
     protected function casts(): array
     {
         return [

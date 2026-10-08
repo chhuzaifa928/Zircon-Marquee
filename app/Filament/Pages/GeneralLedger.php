@@ -6,6 +6,7 @@ use App\Models\Account;
 use App\Models\Voucher;
 use App\Services\AccountBalance;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Collection;
@@ -44,6 +45,34 @@ class GeneralLedger extends Page
     public static function canAccess(): bool
     {
         return auth()->user()?->hasAnyRole(['super_admin', 'admin', 'accounts']) ?? false;
+    }
+
+    public function thisMonth(): void
+    {
+        $this->from = now()->startOfMonth()->toDateString();
+        $this->to = now()->endOfMonth()->toDateString();
+    }
+
+    public function thisYear(): void
+    {
+        $this->from = now()->startOfYear()->toDateString();
+        $this->to = now()->endOfYear()->toDateString();
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('pdf')
+                ->label('Print PDF')
+                ->icon(Heroicon::OutlinedPrinter)
+                ->color('gray')
+                ->visible(fn (): bool => $this->accountId !== null)
+                ->url(fn (): string => route('reports.general-ledger', [
+                    'account_id' => $this->accountId,
+                    'from' => $this->from,
+                    'to' => $this->to,
+                ]), shouldOpenInNewTab: true),
+        ];
     }
 
     /** @return array<int,string> */
