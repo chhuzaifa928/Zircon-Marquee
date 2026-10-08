@@ -47,22 +47,12 @@ class AvailabilityServiceTest extends TestCase
         $this->assertTrue($this->availability->canConfirm($opalId, '2099-06-01', 'dinner'));
     }
 
-    public function test_confirmed_single_hall_blocks_full_marquee(): void
+    public function test_confirmed_booking_blocks_the_same_hall_slot(): void
     {
         $this->book('opal', 'booked');
-        $fullId = Hall::where('slug', 'full_marquee')->value('id');
-
-        $this->assertFalse($this->availability->canConfirm($fullId, '2099-06-01', 'dinner'));
-    }
-
-    public function test_confirmed_full_marquee_blocks_both_halls(): void
-    {
-        $this->book('full_marquee', 'paid');
         $opalId = Hall::where('slug', 'opal')->value('id');
-        $sapphireId = Hall::where('slug', 'sapphire')->value('id');
 
         $this->assertFalse($this->availability->canConfirm($opalId, '2099-06-01', 'dinner'));
-        $this->assertFalse($this->availability->canConfirm($sapphireId, '2099-06-01', 'dinner'));
     }
 
     public function test_opal_does_not_block_sapphire(): void
@@ -70,7 +60,16 @@ class AvailabilityServiceTest extends TestCase
         $this->book('opal', 'booked');
         $sapphireId = Hall::where('slug', 'sapphire')->value('id');
 
+        // Halls are independent — Opal never blocks Sapphire.
         $this->assertTrue($this->availability->canConfirm($sapphireId, '2099-06-01', 'dinner'));
+    }
+
+    public function test_sapphire_does_not_block_opal(): void
+    {
+        $this->book('sapphire', 'paid');
+        $opalId = Hall::where('slug', 'opal')->value('id');
+
+        $this->assertTrue($this->availability->canConfirm($opalId, '2099-06-01', 'dinner'));
     }
 
     public function test_other_slot_and_date_remain_free(): void

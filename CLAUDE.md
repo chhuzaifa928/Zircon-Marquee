@@ -44,12 +44,12 @@ Six **spatie** roles only — there is **no `role` column** on `users`:
 
 ## Core business rules
 
-- **Halls:** Opal + Sapphire; full marquee = both, modelled as a composite hall
-  with a `hall_components` pivot. A hall booking blocks the full marquee for that
-  date+slot and vice versa.
+- **Halls:** Opal + Sapphire only, booked fully independently (no composite
+  "Full Marquee"; a booking in one hall never affects the other).
 - **Availability:** no DB unique on hall+date+slot. Many `tentative` bookings may
   overlap; a new booking is blocked only when a **confirmed** (`booked`/`paid`)
-  booking already holds that hall+date+slot. First confirmed booking wins.
+  booking already holds that **same** hall+date+slot. No cross-hall blocking.
+  First confirmed booking wins.
 - **Booking flow:** sales creates (`tentative`) → accounts confirms (`booked`) →
   full payment → `paid` and locked (`is_locked`, no further edits).
 - **Pricing:** per-head, bill uses `discounted_rate × guests`; itemised extra

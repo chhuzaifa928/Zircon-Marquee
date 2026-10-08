@@ -136,7 +136,6 @@ class BookingPanelTest extends TestCase
     {
         $date = '2099-05-05';
         $opalId = Hall::where('slug', 'opal')->value('id');
-        $fullId = Hall::where('slug', 'full_marquee')->value('id');
 
         // Opal already confirmed for the slot.
         Booking::create([
@@ -150,10 +149,10 @@ class BookingPanelTest extends TestCase
             'status' => 'booked',
         ]);
 
-        // A Full-Marquee tentative for the same slot must not be confirmable.
+        // A second tentative on the SAME hall/date/slot must not be confirmable.
         $contender = Booking::create([
             'customer_id' => Customer::create(['name' => 'Second'])->id,
-            'hall_id' => $fullId,
+            'hall_id' => $opalId,
             'event_date' => $date,
             'booking_date' => now(),
             'slot' => 'dinner',

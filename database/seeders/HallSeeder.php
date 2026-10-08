@@ -9,22 +9,16 @@ class HallSeeder extends Seeder
 {
     public function run(): void
     {
-        $opal = Hall::updateOrCreate(
+        // Two independent halls. There is no composite "Full Marquee" — a
+        // booking in one hall never blocks the other (owner change 2026-10-09).
+        Hall::updateOrCreate(
             ['slug' => 'opal'],
-            ['name' => 'Opal', 'is_composite' => false, 'is_active' => true],
+            ['name' => 'Opal', 'is_active' => true],
         );
 
-        $sapphire = Hall::updateOrCreate(
+        Hall::updateOrCreate(
             ['slug' => 'sapphire'],
-            ['name' => 'Sapphire', 'is_composite' => false, 'is_active' => true],
+            ['name' => 'Sapphire', 'is_active' => true],
         );
-
-        $full = Hall::updateOrCreate(
-            ['slug' => 'full_marquee'],
-            ['name' => 'Full Marquee', 'is_composite' => true, 'is_active' => true],
-        );
-
-        // Full marquee is composed of both halls — booking either blocks it.
-        $full->components()->sync([$opal->id, $sapphire->id]);
     }
 }

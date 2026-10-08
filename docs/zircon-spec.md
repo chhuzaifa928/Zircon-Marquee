@@ -54,13 +54,15 @@ UI themed gold/charcoal (Zircon branding) — functionality first, polish later.
 
 ## Halls & Availability
 
-Opal and Sapphire; full marquee = both. Model as composite hall +
-`hall_components` pivot. Booking a hall blocks the full marquee for that
-date+slot and vice versa.
+Opal and Sapphire only, booked fully independently. There is **no** composite
+"Full Marquee" — a booking in one hall never blocks the other. _(Owner change
+2026-10-09: the composite hall, `hall_components` pivot and `is_composite` flag
+were removed.)_
 
 **NO DB unique on hall+date+slot:** multiple TENTATIVE bookings may overlap a
 slot; block a new booking only when a CONFIRMED (`booked`/`paid`) booking already
-holds it. First confirmed booking wins.
+holds that same hall+date+slot (no cross-hall blocking). First confirmed booking
+wins.
 
 ## Bookings & Billing
 
