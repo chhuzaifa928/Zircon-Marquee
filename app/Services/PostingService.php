@@ -4,7 +4,9 @@ namespace App\Services;
 
 use App\Models\Account;
 use App\Models\Booking;
+use App\Models\EventCost;
 use App\Models\PaymentSlip;
+use App\Models\StockMovement;
 use App\Models\Voucher;
 use Database\Seeders\ChartOfAccountsSeeder;
 use Illuminate\Support\Facades\DB;
@@ -23,6 +25,10 @@ class PostingService
     public const CUSTOMER_ADVANCES = '2100';
 
     public const GST_PAYABLE = '2200';
+
+    public const INVENTORY = '1500';
+
+    public const EVENT_CONSUMABLES = '5600';
 
     public function accountByCode(string $code): ?Account
     {
@@ -178,6 +184,117 @@ class PostingService
             'source_id' => $booking->id,
             'created_by' => auth()->id(),
         ]);
+    }
+
+    // ----- Event costs: postings #3 (expense) and #6 (inventory consumed) -----
+
+    /**
+     * Post the accounting effect of an event cost and, for inventory costs,
+     * deduct the consumed quantity from stock (SRS §10, policy #3/#6):
+     *   - vendor:    Dr expense head · Cr the vendor's supplier account (EV)
+     *   - misc:      Dr expense head · Cr the paid-from cash/bank account (EV)
+     *   - inventory: deduct stock + Dr Event Consumables · Cr Inventory (JV)
+     * Idempotent: a cost that already carries a voucher is left untouched.
+     */
+    public function postEventCost(EventCost $cost): void
+    {
+        if ($cost->voucher_id !== null || $cost->stock_movement_id !== null) {
+            return;
+        }
+
+        DB::transaction(function () use ($cost) {
+            if ($cost->cost_type === 'inventory') {
+                $this->postInventoryCost($cost);
+
+                return;
+            }
+
+            // vendor / misc → expense voucher
+            $credit = $cost->cost_type === 'vendor'
+                ? $cost->vendor?->account_id
+                : $cost->paid_from_account_id;
+
+            if ($cost->expense_account_id === null || $credit === null) {
+                return; // not enough to post; leave as a cost record
+            }
+
+            $voucher = Voucher::create([
+                'type' => 'EV',
+                'date' => $cost->date,
+                'category' => 'Event Cost',
+                'remark' => trim(($cost->description ?: ucfirst($cost->cost_type).' cost').' — '.$cost->booking?->booking_no),
+                'debit_account_id' => $cost->expense_account_id,
+                'credit_account_id' => $credit,
+                'amount' => $cost->amount,
+                'source_type' => EventCost::class,
+                'source_id' => $cost->id,
+                'created_by' => $cost->created_by,
+            ]);
+
+            $cost->forceFill(['voucher_id' => $voucher->id])->saveQuietly();
+        });
+    }
+
+    private function postInventoryCost(EventCost $cost): void
+    {
+        $item = $cost->inventoryItem;
+
+        if ($item === null || (float) $cost->quantity <= 0) {
+            return;
+        }
+
+        // Deduct stock (recomputes qty on hand via the movement lifecycle).
+        $movement = StockMovement::create([
+            'inventory_item_id' => $item->id,
+            'type' => 'out',
+            'quantity' => $cost->quantity,
+            'unit_cost' => $item->unit_cost,
+            'reference' => 'Event cost '.$cost->booking?->booking_no,
+            'booking_id' => $cost->booking_id,
+            'date' => $cost->date,
+            'created_by' => $cost->created_by,
+        ]);
+
+        $inventory = $this->accountByCode(self::INVENTORY);
+        $consumables = $this->accountByCode(self::EVENT_CONSUMABLES);
+
+        $voucherId = null;
+
+        if ($inventory !== null && $consumables !== null) {
+            $voucher = Voucher::create([
+                'type' => 'JV',
+                'date' => $cost->date,
+                'category' => 'Inventory Consumed',
+                'remark' => $item->name.' for '.$cost->booking?->booking_no,
+                'debit_account_id' => $consumables->id,
+                'credit_account_id' => $inventory->id,
+                'amount' => $cost->amount,
+                'source_type' => EventCost::class,
+                'source_id' => $cost->id,
+                'created_by' => $cost->created_by,
+            ]);
+            $voucherId = $voucher->id;
+        }
+
+        $cost->forceFill([
+            'stock_movement_id' => $movement->id,
+            'voucher_id' => $voucherId,
+        ])->saveQuietly();
+    }
+
+    /** Reverse an event cost's voucher and stock movement. */
+    public function reverseEventCost(EventCost $cost): void
+    {
+        if ($cost->voucher_id !== null) {
+            Voucher::whereKey($cost->voucher_id)->get()->each->delete();
+        }
+
+        if ($cost->stock_movement_id !== null) {
+            // Deleting the movement recomputes the item's quantity on hand.
+            StockMovement::whereKey($cost->stock_movement_id)->get()->each->delete();
+        }
+
+        $cost->forceFill(['voucher_id' => null, 'stock_movement_id' => null])->saveQuietly();
     }
 
     // ----- Backfill (Step 3 slips posted before auto-posting existed) -----
