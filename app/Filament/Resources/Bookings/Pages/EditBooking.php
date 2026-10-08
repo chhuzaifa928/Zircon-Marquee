@@ -21,6 +21,7 @@ class EditBooking extends EditRecord
             BookingActions::confirm(),
             BookingActions::cancel(),
             BookingActions::bookingSheet(),
+            BookingActions::advanceReceipt(),
             DeleteAction::make()
                 ->visible(fn (): bool => auth()->user()?->isSuperAdmin() ?? false),
             ForceDeleteAction::make(),

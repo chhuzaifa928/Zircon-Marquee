@@ -12,4 +12,6 @@ Route::get('/', function () {
 Route::middleware('auth')->group(function () {
     Route::get('/bookings/{booking}/sheet', [BookingDocumentController::class, 'bookingSheet'])
         ->name('bookings.sheet');
+    Route::get('/bookings/{booking}/advance-receipt', [BookingDocumentController::class, 'advanceReceipt'])
+        ->name('bookings.advance-receipt');
 });

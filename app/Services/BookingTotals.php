@@ -20,14 +20,15 @@ class BookingTotals
      */
     public function recalculate(Booking $booking): Booking
     {
-        $booking->loadMissing('charges', 'paymentSlips');
-
+        // Sum via relation queries (not cached collections) so a freshly added
+        // or soft-deleted charge/slip is always reflected, even when the booking
+        // instance already had those relations loaded.
         $headcharge = $this->round((float) $booking->discounted_rate * (int) $booking->guests);
-        $charges = $this->round((float) $booking->charges->sum('amount'));
+        $charges = $this->round((float) $booking->charges()->sum('amount'));
         $subtotal = $this->round($headcharge + $charges);
         $gstAmount = $this->round($subtotal * ((float) $booking->gst_rate / 100));
         $grandTotal = $this->round($subtotal + $gstAmount);
-        $advance = $this->round((float) $booking->paymentSlips->sum('amount'));
+        $advance = $this->round((float) $booking->paymentSlips()->sum('amount'));
         $due = $this->round($grandTotal - $advance);
 
         $booking->forceFill([

@@ -85,12 +85,13 @@ class BookingsTable
             ])
             ->recordActions([
                 BookingActions::confirm(),
-                BookingActions::cancel(),
-                BookingActions::bookingSheet(),
                 ActionGroup::make([
                     ViewAction::make(),
                     EditAction::make()
                         ->visible(fn (Booking $record): bool => ! $record->isLocked()),
+                    BookingActions::bookingSheet(),
+                    BookingActions::advanceReceipt(),
+                    BookingActions::cancel(),
                 ]),
             ])
             ->toolbarActions([

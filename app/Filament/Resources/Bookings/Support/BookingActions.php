@@ -102,4 +102,16 @@ class BookingActions
             ->color('gray')
             ->url(fn (Booking $record): string => route('bookings.sheet', $record), shouldOpenInNewTab: true);
     }
+
+    /**
+     * Open the printable Advance Receipt (SRS §14.4) as an A4 PDF.
+     */
+    public static function advanceReceipt(): Action
+    {
+        return Action::make('advanceReceipt')
+            ->label('Advance receipt')
+            ->icon(Heroicon::OutlinedReceiptPercent)
+            ->color('gray')
+            ->url(fn (Booking $record): string => route('bookings.advance-receipt', $record), shouldOpenInNewTab: true);
+    }
 }

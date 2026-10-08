@@ -43,7 +43,7 @@ class BookingResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\PaymentSlipsRelationManager::class,
         ];
     }
 

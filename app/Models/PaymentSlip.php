@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\NumberSequenceService;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -28,6 +29,16 @@ class PaymentSlip extends Model implements Auditable
 
     /** Payment methods. */
     public const METHODS = ['cash', 'bank_transfer', 'cheque', 'card'];
+
+    protected static function booted(): void
+    {
+        // Gapless, sequential slip number (SL-0001) — SRS §8.1.
+        static::creating(function (PaymentSlip $slip) {
+            if (blank($slip->slip_no)) {
+                $slip->slip_no = app(NumberSequenceService::class)->next('slip_no', 'SL-');
+            }
+        });
+    }
 
     protected function casts(): array
     {
