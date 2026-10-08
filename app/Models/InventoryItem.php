@@ -32,4 +32,16 @@ class InventoryItem extends Model
     {
         return $this->hasMany(StockMovement::class);
     }
+
+    /** At or below the reorder level (SRS §11.4). */
+    public function isLowStock(): bool
+    {
+        return (float) $this->qty_on_hand <= (float) $this->reorder_level;
+    }
+
+    /** Current stock value = quantity on hand × unit cost. */
+    public function stockValue(): float
+    {
+        return round((float) $this->qty_on_hand * (float) $this->unit_cost, 2);
+    }
 }

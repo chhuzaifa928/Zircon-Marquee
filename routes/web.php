@@ -23,5 +23,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/bookings-master', [ReportController::class, 'bookingsMaster'])->name('bookings-master');
         Route::get('/profit-loss', [ReportController::class, 'profitLoss'])->name('profit-loss');
         Route::get('/general-ledger', [ReportController::class, 'generalLedger'])->name('general-ledger');
+        Route::get('/inventory-stock', [ReportController::class, 'inventoryStock'])->name('inventory-stock');
     });
 });

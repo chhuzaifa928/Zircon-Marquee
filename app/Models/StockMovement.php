@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\StockMovementService;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -20,6 +21,26 @@ class StockMovement extends Model
 {
     /** Movement types. */
     public const TYPES = ['in', 'out', 'adjustment'];
+
+    protected static function booted(): void
+    {
+        static::creating(function (StockMovement $movement) {
+            if (blank($movement->created_by)) {
+                $movement->created_by = auth()->id();
+            }
+        });
+
+        // Keep the item's quantity on hand in step on every entry path.
+        $recalc = function (StockMovement $movement) {
+            if ($movement->inventoryItem) {
+                app(StockMovementService::class)->recalculate($movement->inventoryItem);
+            }
+        };
+
+        static::created($recalc);
+        static::updated($recalc);
+        static::deleted($recalc);
+    }
 
     protected function casts(): array
     {

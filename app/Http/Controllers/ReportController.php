@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Account;
+use App\Models\InventoryItem;
 use App\Models\Setting;
 use App\Models\Voucher;
 use App\Services\AccountBalance;
@@ -74,6 +75,31 @@ class ReportController extends Controller
         return $this->stream('pdf.reports.profit-and-loss', [
             'report' => app(ProfitAndLossReport::class)->build($from, $to),
         ], 'Profit & Loss Statement', $from, $to, 'profit-loss');
+    }
+
+    public function inventoryStock(Request $request): Response
+    {
+        $lowOnly = $request->boolean('low');
+
+        $items = InventoryItem::query()
+            ->orderBy('code')
+            ->get()
+            ->when($lowOnly, fn ($c) => $c->filter->isLowStock()->values());
+
+        $totalValue = round($items->sum(fn (InventoryItem $i): float => $i->stockValue()), 2);
+
+        $data = [
+            'settings' => Setting::current(),
+            'title' => 'Inventory Stock Report',
+            'from' => now()->toDateString(),
+            'to' => now()->toDateString(),
+            'generatedBy' => auth()->user()?->name,
+            'items' => $items,
+            'totalValue' => $totalValue,
+            'lowOnly' => $lowOnly,
+        ];
+
+        return Pdf::loadView('pdf.reports.inventory-stock', $data)->setPaper('a4')->stream('inventory-stock.pdf');
     }
 
     public function generalLedger(Request $request): Response
