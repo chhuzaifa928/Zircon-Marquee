@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Services\NumberSequenceService;
+use App\Services\PostingService;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -38,6 +39,18 @@ class PaymentSlip extends Model implements Auditable
                 $slip->slip_no = app(NumberSequenceService::class)->next('slip_no', 'SL-');
             }
         });
+
+        // Auto-post the Receipt Voucher (posting #1) on any entry path, and keep
+        // it in step when a Super Admin edits or deletes a posted slip.
+        static::created(fn (PaymentSlip $slip) => app(PostingService::class)->postReceipt($slip));
+
+        static::updated(function (PaymentSlip $slip) {
+            $posting = app(PostingService::class);
+            $posting->reverseReceipt($slip);
+            $posting->postReceipt($slip);
+        });
+
+        static::deleted(fn (PaymentSlip $slip) => app(PostingService::class)->reverseReceipt($slip));
     }
 
     protected function casts(): array

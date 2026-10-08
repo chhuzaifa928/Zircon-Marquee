@@ -16,7 +16,7 @@ class Account extends Model implements Auditable
     use SoftDeletes;
 
     /** Chart-of-accounts types. */
-    public const TYPES = ['cash', 'bank', 'staff', 'income', 'expense', 'supplier'];
+    public const TYPES = ['cash', 'bank', 'staff', 'asset', 'liability', 'equity', 'income', 'expense', 'supplier'];
 
     protected function casts(): array
     {

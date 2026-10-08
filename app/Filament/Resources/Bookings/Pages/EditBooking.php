@@ -19,9 +19,11 @@ class EditBooking extends EditRecord
     {
         return [
             BookingActions::confirm(),
+            BookingActions::closeEvent(),
             BookingActions::cancel(),
             BookingActions::bookingSheet(),
             BookingActions::advanceReceipt(),
+            BookingActions::reopenEvent(),
             DeleteAction::make()
                 ->visible(fn (): bool => auth()->user()?->isSuperAdmin() ?? false),
             ForceDeleteAction::make(),

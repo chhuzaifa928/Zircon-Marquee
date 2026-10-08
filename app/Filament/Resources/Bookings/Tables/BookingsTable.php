@@ -85,6 +85,7 @@ class BookingsTable
             ])
             ->recordActions([
                 BookingActions::confirm(),
+                BookingActions::closeEvent(),
                 ActionGroup::make([
                     ViewAction::make(),
                     EditAction::make()
@@ -92,6 +93,7 @@ class BookingsTable
                     BookingActions::bookingSheet(),
                     BookingActions::advanceReceipt(),
                     BookingActions::cancel(),
+                    BookingActions::reopenEvent(),
                 ]),
             ])
             ->toolbarActions([

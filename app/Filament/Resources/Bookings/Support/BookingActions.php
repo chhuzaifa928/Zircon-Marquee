@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Bookings\Support;
 
 use App\Models\Booking;
 use App\Services\AvailabilityService;
+use App\Services\PostingService;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Support\Icons\Heroicon;
@@ -113,5 +114,55 @@ class BookingActions
             ->icon(Heroicon::OutlinedReceiptPercent)
             ->color('gray')
             ->url(fn (Booking $record): string => route('bookings.advance-receipt', $record), shouldOpenInNewTab: true);
+    }
+
+    /**
+     * Close the event and recognise revenue (posting #2). Accounts-only; the
+     * booking must be fully paid and not already closed.
+     */
+    public static function closeEvent(): Action
+    {
+        return Action::make('closeEvent')
+            ->label('Close event & recognise revenue')
+            ->icon(Heroicon::OutlinedFlag)
+            ->color('success')
+            ->requiresConfirmation()
+            ->modalHeading('Close event and recognise revenue')
+            ->modalDescription('Posts the revenue-recognition vouchers (Dr Customer Advances; Cr income heads + GST) and opens event costing. This cannot be undone except by a Super Admin.')
+            ->visible(fn (Booking $record): bool => $record->status === 'paid'
+                && ! $record->isClosed()
+                && static::canConfirm())
+            ->action(function (Booking $record): void {
+                app(PostingService::class)->postRevenueRecognition($record);
+
+                Notification::make()
+                    ->success()
+                    ->title('Event closed')
+                    ->body("Revenue recognised for {$record->booking_no}. Costing is now open.")
+                    ->send();
+            });
+    }
+
+    /**
+     * Reverse a revenue-recognition batch and reopen the event. Super Admin only.
+     */
+    public static function reopenEvent(): Action
+    {
+        return Action::make('reopenEvent')
+            ->label('Reverse revenue & reopen')
+            ->icon(Heroicon::OutlinedArrowUturnLeft)
+            ->color('danger')
+            ->requiresConfirmation()
+            ->visible(fn (Booking $record): bool => $record->isClosed()
+                && (auth()->user()?->isSuperAdmin() ?? false))
+            ->action(function (Booking $record): void {
+                app(PostingService::class)->reverseRevenueRecognition($record);
+
+                Notification::make()
+                    ->success()
+                    ->title('Event reopened')
+                    ->body("Revenue vouchers for {$record->booking_no} reversed.")
+                    ->send();
+            });
     }
 }

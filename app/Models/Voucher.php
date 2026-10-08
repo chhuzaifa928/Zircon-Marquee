@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\NumberSequenceService;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,6 +13,7 @@ use OwenIt\Auditing\Contracts\Auditable;
 
 #[Fillable([
     'voucher_no',
+    'batch_uid',
     'type',
     'date',
     'category',
@@ -28,8 +30,27 @@ class Voucher extends Model implements Auditable
     use AuditableTrait;
     use SoftDeletes;
 
-    /** Voucher types: Receipt, Expense, Payment. */
-    public const TYPES = ['RV', 'EV', 'PV'];
+    /** Voucher types: Receipt, Expense, Payment, Journal. */
+    public const TYPES = ['RV', 'EV', 'PV', 'JV'];
+
+    /** Human labels for the voucher types. */
+    public const TYPE_LABELS = [
+        'RV' => 'Receipt Voucher',
+        'EV' => 'Expense Voucher',
+        'PV' => 'Payment Voucher',
+        'JV' => 'Journal Voucher',
+    ];
+
+    protected static function booted(): void
+    {
+        // Gapless, per-type voucher number (RV-0001, EV-0001, PV-0001) — §9.2.
+        static::creating(function (Voucher $voucher) {
+            if (blank($voucher->voucher_no) && filled($voucher->type)) {
+                $voucher->voucher_no = app(NumberSequenceService::class)
+                    ->next('voucher_no_'.$voucher->type, $voucher->type.'-');
+            }
+        });
+    }
 
     protected function casts(): array
     {

@@ -41,6 +41,7 @@ use OwenIt\Auditing\Contracts\Auditable;
     'created_by',
     'confirmed_by',
     'confirmed_at',
+    'event_closed_at',
 ])]
 class Booking extends Model implements Auditable
 {
@@ -87,6 +88,12 @@ class Booking extends Model implements Auditable
         return $this->status === 'tentative';
     }
 
+    /** Whether the event has been closed and its revenue recognised (§9.3). */
+    public function isClosed(): bool
+    {
+        return $this->event_closed_at !== null;
+    }
+
     protected function casts(): array
     {
         return [
@@ -107,6 +114,7 @@ class Booking extends Model implements Auditable
             'advance_total' => 'decimal:2',
             'due' => 'decimal:2',
             'confirmed_at' => 'datetime',
+            'event_closed_at' => 'datetime',
         ];
     }
 
