@@ -43,13 +43,20 @@ class User extends Authenticatable implements FilamentUser
     }
 
     /**
-     * Who may reach the Filament admin panel.
-     *
-     * System-lock enforcement (only super_admin when settings.system_locked) is
-     * layered on in the super-admin controls module.
+     * Who may reach the Filament admin panel. Inactive users are always denied;
+     * while the system is locked (settings.system_locked) only the Super Admin
+     * may log in (SRS §4.4).
      */
     public function canAccessPanel(Panel $panel): bool
     {
-        return $this->is_active;
+        if (! $this->is_active) {
+            return false;
+        }
+
+        if (Setting::current()->system_locked && ! $this->isSuperAdmin()) {
+            return false;
+        }
+
+        return true;
     }
 }
