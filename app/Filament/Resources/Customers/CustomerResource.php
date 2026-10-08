@@ -54,6 +54,26 @@ class CustomerResource extends Resource
         return ['code', 'name', 'phone', 'cnic'];
     }
 
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->inAnyRole(\App\Models\User::BOOKING_VIEW) ?? false;
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()?->inAnyRole(\App\Models\User::BOOKING_MANAGE) ?? false;
+    }
+
+    public static function canEdit(\Illuminate\Database\Eloquent\Model $record): bool
+    {
+        return auth()->user()?->inAnyRole(\App\Models\User::BOOKING_MANAGE) ?? false;
+    }
+
+    public static function canDelete(\Illuminate\Database\Eloquent\Model $record): bool
+    {
+        return auth()->user()?->isSuperAdmin() ?? false;
+    }
+
     public static function getPages(): array
     {
         return [

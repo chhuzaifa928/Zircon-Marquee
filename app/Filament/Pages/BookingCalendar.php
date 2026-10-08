@@ -41,6 +41,11 @@ class BookingCalendar extends Page
         $this->month = (int) now()->month;
     }
 
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->inAnyRole(\App\Models\User::BOOKING_VIEW) ?? false;
+    }
+
     public function previousMonth(): void
     {
         $anchor = Carbon::create($this->year, $this->month, 1)->subMonth();

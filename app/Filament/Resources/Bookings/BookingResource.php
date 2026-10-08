@@ -8,6 +8,7 @@ use App\Filament\Resources\Bookings\Pages\ListBookings;
 use App\Filament\Resources\Bookings\Schemas\BookingForm;
 use App\Filament\Resources\Bookings\Tables\BookingsTable;
 use App\Models\Booking;
+use App\Models\User;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -47,10 +48,21 @@ class BookingResource extends Resource
         ];
     }
 
-    /** A fully-paid booking is locked against further edits (SRS §7.7). */
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->inAnyRole(User::BOOKING_VIEW) ?? false;
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()?->inAnyRole(User::BOOKING_MANAGE) ?? false;
+    }
+
+    /** Editable by sales/admin/super, and only until fully paid (SRS §7.7). */
     public static function canEdit(Model $record): bool
     {
-        return ! $record->isLocked() && parent::canEdit($record);
+        return ! $record->isLocked()
+            && (auth()->user()?->inAnyRole(User::BOOKING_MANAGE) ?? false);
     }
 
     /** Only the Super Admin can delete bookings. */
