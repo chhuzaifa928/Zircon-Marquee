@@ -26,8 +26,8 @@ class EventCostsTable
                     ->searchable(),
                 TextColumn::make('cost_type')
                     ->badge()
-                    ->formatStateUsing(fn (string $s): string => ucfirst($s))
-                    ->color(fn (string $s): string => match ($s) {
+                    ->formatStateUsing(fn (string $state): string => ucfirst($state))
+                    ->color(fn (string $state): string => match ($state) {
                         'vendor' => 'info',
                         'inventory' => 'warning',
                         'misc' => 'gray',

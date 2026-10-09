@@ -78,7 +78,7 @@ class PaymentSlipsRelationManager extends RelationManager
                 TextColumn::make('account.name')->label('Received into'),
                 TextColumn::make('method')
                     ->badge()
-                    ->formatStateUsing(fn (?string $s): string => $s ? ucwords(str_replace('_', ' ', $s)) : '—'),
+                    ->formatStateUsing(fn (?string $state): string => $state ? ucwords(str_replace('_', ' ', $state)) : '—'),
                 TextColumn::make('amount')
                     ->money('PKR')
                     ->summarize(\Filament\Tables\Columns\Summarizers\Sum::make()->money('PKR')),

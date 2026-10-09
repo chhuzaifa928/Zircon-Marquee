@@ -26,8 +26,8 @@ class AssetsTable
                 TextColumn::make('purchase_cost')->money('PKR')->alignEnd()->toggleable(),
                 TextColumn::make('condition')
                     ->badge()
-                    ->formatStateUsing(fn (?string $s): string => $s ? ucfirst($s) : '—')
-                    ->color(fn (?string $s): string => match ($s) {
+                    ->formatStateUsing(fn (?string $state): string => $state ? ucfirst($state) : '—')
+                    ->color(fn (?string $state): string => match ($state) {
                         'new', 'good' => 'success',
                         'fair' => 'warning',
                         'poor' => 'danger',
@@ -35,8 +35,8 @@ class AssetsTable
                     }),
                 TextColumn::make('status')
                     ->badge()
-                    ->formatStateUsing(fn (string $s): string => ucwords(str_replace('_', ' ', $s)))
-                    ->color(fn (string $s): string => match ($s) {
+                    ->formatStateUsing(fn (string $state): string => ucwords(str_replace('_', ' ', $state)))
+                    ->color(fn (string $state): string => match ($state) {
                         'available' => 'success',
                         'in_use' => 'info',
                         'retired' => 'gray',

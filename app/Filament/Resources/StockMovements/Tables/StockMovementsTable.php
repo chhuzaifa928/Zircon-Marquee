@@ -21,13 +21,13 @@ class StockMovementsTable
                 TextColumn::make('date')->date('d M Y')->sortable(),
                 TextColumn::make('inventoryItem.name')
                     ->label('Item')
-                    ->description(fn ($r): ?string => $r->inventoryItem?->code)
+                    ->description(fn ($record): ?string => $record->inventoryItem?->code)
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('type')
                     ->badge()
-                    ->formatStateUsing(fn (string $s): string => ucfirst($s))
-                    ->color(fn (string $s): string => match ($s) {
+                    ->formatStateUsing(fn (string $state): string => ucfirst($state))
+                    ->color(fn (string $state): string => match ($state) {
                         'in' => 'success',
                         'out' => 'danger',
                         'adjustment' => 'warning',
