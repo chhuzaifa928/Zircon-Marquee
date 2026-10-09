@@ -9,6 +9,7 @@ use App\Filament\Resources\InventoryItems\RelationManagers\StockMovementsRelatio
 use App\Filament\Resources\InventoryItems\Schemas\InventoryItemForm;
 use App\Filament\Resources\InventoryItems\Tables\InventoryItemsTable;
 use App\Models\InventoryItem;
+use App\Models\User;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -49,12 +50,12 @@ class InventoryItemResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()?->hasAnyRole(['super_admin', 'admin', 'inventory']) ?? false;
+        return auth()->user()?->inAnyRole(User::INVENTORY) ?? false;
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()?->hasAnyRole(['super_admin', 'admin', 'inventory']) ?? false;
+        return auth()->user()?->inAnyRole(User::INVENTORY) ?? false;
     }
 
     public static function getPages(): array

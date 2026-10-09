@@ -7,6 +7,7 @@ use App\Filament\Resources\Vendors\Pages\EditVendor;
 use App\Filament\Resources\Vendors\Pages\ListVendors;
 use App\Filament\Resources\Vendors\Schemas\VendorForm;
 use App\Filament\Resources\Vendors\Tables\VendorsTable;
+use App\Models\User;
 use App\Models\Vendor;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -41,12 +42,12 @@ class VendorResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()?->hasAnyRole(['super_admin', 'admin', 'accounts']) ?? false;
+        return auth()->user()?->inAnyRole(User::VENDOR_VIEW) ?? false;
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()?->hasAnyRole(['super_admin', 'admin']) ?? false;
+        return auth()->user()?->inAnyRole(User::ADMINS) ?? false;
     }
 
     public static function getPages(): array

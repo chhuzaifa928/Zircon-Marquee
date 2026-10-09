@@ -8,6 +8,7 @@ use App\Filament\Resources\DecorItems\Pages\ListDecorItems;
 use App\Filament\Resources\DecorItems\Schemas\DecorItemForm;
 use App\Filament\Resources\DecorItems\Tables\DecorItemsTable;
 use App\Models\DecorItem;
+use App\Models\User;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -39,12 +40,12 @@ class DecorItemResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()?->hasAnyRole(['super_admin', 'admin', 'decor']) ?? false;
+        return auth()->user()?->inAnyRole(User::DECOR) ?? false;
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()?->hasAnyRole(['super_admin', 'admin', 'decor']) ?? false;
+        return auth()->user()?->inAnyRole(User::DECOR) ?? false;
     }
 
     public static function getPages(): array

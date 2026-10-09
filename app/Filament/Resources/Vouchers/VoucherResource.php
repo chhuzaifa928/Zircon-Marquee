@@ -7,6 +7,7 @@ use App\Filament\Resources\Vouchers\Pages\EditVoucher;
 use App\Filament\Resources\Vouchers\Pages\ListVouchers;
 use App\Filament\Resources\Vouchers\Schemas\VoucherForm;
 use App\Filament\Resources\Vouchers\Tables\VouchersTable;
+use App\Models\User;
 use App\Models\Voucher;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -40,12 +41,12 @@ class VoucherResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()?->hasAnyRole(['super_admin', 'admin', 'accounts']) ?? false;
+        return auth()->user()?->inAnyRole(User::ACCOUNTING) ?? false;
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()?->hasAnyRole(['super_admin', 'admin', 'accounts']) ?? false;
+        return auth()->user()?->inAnyRole(User::ACCOUNTING) ?? false;
     }
 
     /** Accounts post vouchers but cannot change them; only Super Admin can (§9.5). */

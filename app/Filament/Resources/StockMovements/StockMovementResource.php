@@ -8,6 +8,7 @@ use App\Filament\Resources\StockMovements\Pages\ListStockMovements;
 use App\Filament\Resources\StockMovements\Schemas\StockMovementForm;
 use App\Filament\Resources\StockMovements\Tables\StockMovementsTable;
 use App\Models\StockMovement;
+use App\Models\User;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -37,12 +38,12 @@ class StockMovementResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()?->hasAnyRole(['super_admin', 'admin', 'inventory']) ?? false;
+        return auth()->user()?->inAnyRole(User::INVENTORY) ?? false;
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()?->hasAnyRole(['super_admin', 'admin', 'inventory']) ?? false;
+        return auth()->user()?->inAnyRole(User::INVENTORY) ?? false;
     }
 
     public static function getPages(): array

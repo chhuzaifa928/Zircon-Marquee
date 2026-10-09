@@ -8,6 +8,7 @@ use App\Filament\Resources\PaymentSlips\Pages\ListPaymentSlips;
 use App\Filament\Resources\PaymentSlips\Schemas\PaymentSlipForm;
 use App\Filament\Resources\PaymentSlips\Tables\PaymentSlipsTable;
 use App\Models\PaymentSlip;
+use App\Models\User;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -43,12 +44,12 @@ class PaymentSlipResource extends Resource
     /** Accounts, Admin and Super Admin record payments (SRS permission matrix). */
     public static function canCreate(): bool
     {
-        return auth()->user()?->hasAnyRole(['super_admin', 'admin', 'accounts']) ?? false;
+        return auth()->user()?->inAnyRole(User::ACCOUNTING) ?? false;
     }
 
     public static function canViewAny(): bool
     {
-        return auth()->user()?->hasAnyRole(['super_admin', 'admin', 'accounts']) ?? false;
+        return auth()->user()?->inAnyRole(User::ACCOUNTING) ?? false;
     }
 
     /** Only the Super Admin may change a posted slip (SRS §9.5, business rule 9). */

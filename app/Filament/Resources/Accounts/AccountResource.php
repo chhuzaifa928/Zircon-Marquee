@@ -8,6 +8,7 @@ use App\Filament\Resources\Accounts\Pages\ListAccounts;
 use App\Filament\Resources\Accounts\Schemas\AccountForm;
 use App\Filament\Resources\Accounts\Tables\AccountsTable;
 use App\Models\Account;
+use App\Models\User;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -44,12 +45,12 @@ class AccountResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()?->hasAnyRole(['super_admin', 'admin', 'accounts']) ?? false;
+        return auth()->user()?->inAnyRole(User::ACCOUNTING) ?? false;
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()?->hasAnyRole(['super_admin', 'admin', 'accounts']) ?? false;
+        return auth()->user()?->inAnyRole(User::ACCOUNTING) ?? false;
     }
 
     /** Accounting entries are immutable to their authors (SRS §9.5). */

@@ -8,6 +8,7 @@ use App\Filament\Resources\EventCosts\Pages\ListEventCosts;
 use App\Filament\Resources\EventCosts\Schemas\EventCostForm;
 use App\Filament\Resources\EventCosts\Tables\EventCostsTable;
 use App\Models\EventCost;
+use App\Models\User;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -40,13 +41,13 @@ class EventCostResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()?->hasAnyRole(['super_admin', 'admin', 'accounts']) ?? false;
+        return auth()->user()?->inAnyRole(User::ACCOUNTING) ?? false;
     }
 
     /** Accounts record event costs (after full payment, §10.2). */
     public static function canCreate(): bool
     {
-        return auth()->user()?->hasAnyRole(['super_admin', 'admin', 'accounts']) ?? false;
+        return auth()->user()?->inAnyRole(User::ACCOUNTING) ?? false;
     }
 
     /** Accounting entries are immutable to their authors (§9.5). */
