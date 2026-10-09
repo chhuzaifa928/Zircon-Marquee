@@ -30,7 +30,12 @@ class CustomersTable
                     ->searchable(),
                 TextColumn::make('cnic')
                     ->label('CNIC')
-                    ->searchable(),
+                    // CNIC is encrypted; search matches the full value exactly
+                    // via the blind index (partial search is not possible).
+                    ->searchable(query: fn ($query, string $search) => $query->orWhere(
+                        'cnic_index',
+                        \App\Models\Customer::blindIndex($search),
+                    )),
                 TextColumn::make('bookings_count')
                     ->label('Bookings')
                     ->counts('bookings')

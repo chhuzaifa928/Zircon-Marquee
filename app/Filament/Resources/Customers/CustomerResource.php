@@ -51,7 +51,9 @@ class CustomerResource extends Resource
 
     public static function getGloballySearchableAttributes(): array
     {
-        return ['code', 'name', 'phone', 'cnic'];
+        // CNIC is excluded: it is encrypted, so only exact blind-index lookups
+        // work (available in the Customers table search), not LIKE.
+        return ['code', 'name', 'phone'];
     }
 
     public static function canViewAny(): bool

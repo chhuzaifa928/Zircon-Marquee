@@ -71,8 +71,10 @@ Six **spatie** roles only — there is **no `role` column** on `users`:
 - **Soft-deletes + auditing** on: `bookings`, `booking_charges`,
   `payment_slips`, `vouchers`, `accounts`, `event_costs`.
 - `created_by` / `confirmed_by`: nullable FK, `nullOnDelete`.
-- `phone` & `cnic`: plain searchable columns for now (encryption deferred to
-  hardening).
+- `phone`: plain searchable column. `cnic`: **encrypted at rest** (`encrypted`
+  cast) with a deterministic `cnic_index` blind index for **exact-match** search
+  (`Customer::blindIndex()` / `scopeWhereCnic()`); partial CNIC search is not
+  possible by design.
 - **Numbers:** atomic, gapless sequences via the `number_sequences` table /
   `NumberSequenceService` for `booking_no`, `slip_no`, `voucher_no` (per type
   RV/EV/PV) and customer `code`. **Never `max()+1`.**

@@ -142,8 +142,9 @@ code. **Not `max()+1`.**
 - Soft-deletes + auditing on `bookings`, `booking_charges`, `payment_slips`,
   `vouchers`, `accounts`, `event_costs`.
 - `created_by`/`confirmed_by` nullable FK `nullOnDelete`.
-- `phone` & `cnic` are plain searchable columns for now (encryption deferred to
-  hardening).
+- `phone` is a plain searchable column; `cnic` is encrypted at rest with a
+  `cnic_index` blind index for exact-match search. _(Previously deferred to the
+  hardening pass; now implemented.)_
 - Clean, conventional Laravel; migrations for all schema; seeders for roles,
   halls, settings, a starter chart of accounts.
 

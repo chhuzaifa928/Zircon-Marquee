@@ -22,6 +22,13 @@ in code today and the hardening steps for deployment.
   case, numbers and symbols; in production also checks Have-I-Been-Pwned
   (`uncompromised()`). Passwords are hashed (`hashed` cast) and never mass-assigned.
 
+### Data protection
+- **CNIC encrypted at rest** (`encrypted` cast) with a deterministic
+  `cnic_index` blind index (HMAC-SHA256 of the digits-only value, app-keyed) for
+  exact-match lookup. Partial CNIC search is intentionally unavailable; search by
+  the full value on the Customers list (`Customer::blindIndex()` /
+  `scopeWhereCnic()`). Phone remains plain/searchable.
+
 ### Auditing & integrity
 - **Audit trail** (owen-it/laravel-auditing) on all financial models and on
   `User` (password/remember_token excluded from audits).
@@ -52,10 +59,9 @@ in code today and the hardening steps for deployment.
 
 ## Deferred / optional (next hardening pass)
 
-- **CNIC & phone encryption** — currently plain, searchable columns (SRS/CLAUDE
-  decision). Encrypting breaks `LIKE` search; options: encrypt at rest with a
-  separate blind-index column for search, or DB-level encryption. Plan before
-  enabling.
+- **Phone encryption** — phone is still a plain, searchable column. It can be
+  encrypted the same way CNIC was (blind index for exact match) when the owner
+  accepts losing partial phone search.
 - **Two-factor authentication** — Filament supports app/email MFA; enable with
   the required user columns once the owner opts in.
 - **Content-Security-Policy** — a strict CSP needs Filament's inline

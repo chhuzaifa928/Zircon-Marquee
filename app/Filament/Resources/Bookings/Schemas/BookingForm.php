@@ -48,7 +48,9 @@ class BookingForm
                         Select::make('customer_id')
                             ->label('Host')
                             ->relationship('customer', 'name')
-                            ->searchable(['name', 'phone', 'cnic', 'code'])
+                            // CNIC is encrypted (exact-match only, via the
+                            // Customers list); search hosts here by name/phone/code.
+                            ->searchable(['name', 'phone', 'code'])
                             ->preload()
                             ->required()
                             ->columnSpanFull()
